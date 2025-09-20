@@ -4,33 +4,52 @@ from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms import StringField, EmailField, SubmitField
+from wtforms.validators import DataRequired, Email
 
-import secrets
 from datetime import datetime
 
-class NameForm(FlaskForm):
+class NameEmailForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
+    email = EmailField('What is your UofT Email address?',
+                       validators=[DataRequired()],
+                       render_kw={'required': True})
     submit = SubmitField('Submit')
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)  
 moment = Moment(app)
 
-app.config['SECRET_KEY'] = secrets.token_hex(16)
+app.config['SECRET_KEY'] = "dev-secret-key-change-me"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    form = NameForm()
+    form = NameEmailForm()
+    non_uoft_email = False
+    
     if form.validate_on_submit():
         old_name = session.get('name')
+        old_email = session.get('email')
+        
         if old_name is not None and old_name != form.name.data:
             flash('Looks like you have changed your name!')
+        if old_email is not None and old_email != form.email.data:
+            flash('Looks like you have changed your email address!')
+            
         session['name'] = form.name.data
-        return redirect(url_for('index'))
+        session['email'] = form.email.data
+        
+        if "utoronto" in form.email.data.lower():
+            return redirect(url_for('index'))
+        else:
+            non_uoft_email = True
+            return render_template('index.html',
+                                   form=form,
+                                   name=session.get('name'),
+                                   email=session.get('email'),
+                                   non_uoft_email=non_uoft_email)
     return render_template('index.html',
-        form = form, name = session.get('name'))
+        form = form, name = session.get('name'), email = session.get('email'), non_uoft_email=False)
 
 @app.route('/user/<name>')
 def user(name):
