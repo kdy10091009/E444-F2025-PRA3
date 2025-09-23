@@ -20,7 +20,7 @@ app = Flask(__name__)
 bootstrap = Bootstrap(app)  
 moment = Moment(app)
 
-app.config['SECRET_KEY'] = "dev-secret-key-change-me"
+app.config['SECRET_KEY'] = "docker-secret-key"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

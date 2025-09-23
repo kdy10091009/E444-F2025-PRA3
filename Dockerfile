@@ -9,6 +9,6 @@ COPY . .
 ENV FLASK_APP=hello.py
 ENV FLASK_RUN_HOST=0.0.0.0
 
-EXPOSE 5000
+EXPOSE 8000
 
 CMD ["python3", "-m", "flask", "run"]
